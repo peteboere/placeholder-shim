@@ -1,0 +1,12 @@
+{
+    "version": "0.5.0",
+    "name": "placeholder-shim",
+    "description": "Lightweight HTML5 placeholder shim",
+    "license": "MIT",
+    "authors": [
+        "Pete Boere <pete@the-echoplex.net>"
+    ],
+    "dependencies": {
+        "jquery": ">= 1.5"
+    }
+}
