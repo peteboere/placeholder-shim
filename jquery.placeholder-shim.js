@@ -68,7 +68,7 @@ function placeholderShim (element) {
         .css({
             left: elementOffset.left,
             top: elementOffset.top,
-            maxWidth: $element.width(),
+            maxWidth: $element.width()
         });
     $.each([
         'box-sizing',

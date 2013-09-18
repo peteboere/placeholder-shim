@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <title>Placeholder shim demo</title>
+    <link rel="stylesheet" href="bower_components/normalize-css/normalize.css"/>
+    <style>
+    body {
+        padding: 10px 20px;
+        }
+    label {
+        display: block;
+        margin: 1em 0 .4em;
+        }
+    input, textarea {
+        padding: 4px;
+        }
+    legend {
+        font-weight: bold;
+        }
+    .placeholder-shim {
+        color: #999;
+        }
+    </style>
+
+    <script src="bower_components/jquery/jquery.js"></script>
+    <script src="../jquery.placeholder-shim.js"></script>
+    <script>
+    jQuery(function ($) {
+        $('input, textarea').placeholderShim();
+    });
+    </script>
+</head>
+<body>
+    <h1>Placeholder shim demo</h1>
+    <form action="">
+        <fieldset>
+            <legend>The form</legend>
+
+            <label for="">Name:</label>
+            <input size="40" placeholder="Your name please" />
+
+            <label for="">Email:</label>
+            <input size="40" type="email" placeholder="We won't spam you" />
+
+            <label for="">Comments:</label>
+            <textarea cols="30" rows="10" placeholder="Put it there my friend"></textarea>
+
+            <br />
+            <br />
+            <button type="submit">Send</button>
+        </fieldset>
+    </form>
+</body>
+</html>
