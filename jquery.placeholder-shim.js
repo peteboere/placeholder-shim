@@ -83,7 +83,18 @@ function placeholderShim (element) {
         'line-height',
         'text-align'
         ], function (index, property) {
-            $placeholder.css(property, $element.css(property));
+            var element = $element[0];
+            // Workaround incorrect reported line-height in IE.
+            if (
+                property == 'line-height' &&
+                element.currentStyle &&
+                property in element.currentStyle
+            ) {
+                $placeholder.css(property, element.currentStyle[property]);
+            }
+            else {
+                $placeholder.css(property, $element.css(property));
+            }
         });
 
     // Set initial state.
