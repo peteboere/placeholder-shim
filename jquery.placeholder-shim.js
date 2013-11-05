@@ -61,6 +61,12 @@ function placeholderShim (element) {
         }
     }
 
+    // If an ID is set on $element store it on $placeholder so it can be targeted
+    // individually with CSS.
+    if ($element.attr('id')) {
+        $placeholder.attr('for', $element.attr('id'));
+    }
+
     // Copy position and styles from $element to $placeholder so it sits directly above.
     var elementOffset = $element.offset();
     $placeholder
