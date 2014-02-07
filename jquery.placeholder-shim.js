@@ -111,10 +111,13 @@ function placeholderShimRefresh (options) {
 
     $.each(shimmedElements, function (index, element) {
         var $element = $(element);
+        var visible = $element.is(':visible');
         var $placeholder = $element.data(NS);
 
-        // Only update elements that are in the DOM.
-        if ($placeholder && $placeholder[0].parentNode) {
+        $placeholder && $placeholder.toggle(visible);
+
+        // Only update visible elements that are in the DOM.
+        if (visible && $placeholder && $placeholder[0].parentNode) {
             placeholderShim(element, options);
         }
     });
