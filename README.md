@@ -2,7 +2,7 @@
 
 * Does nothing if browser supports the placeholder attribute.
 * Does not set the value of inputs; so no issues with browser autocomplete or accidentally posted forms.
-* Uses ARIA for enhanced accessibilty.
+* Uses ARIA for enhanced accessibility.
 * Very small.
 
 

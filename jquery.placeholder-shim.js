@@ -3,8 +3,8 @@ Another lightweight HTML5 placeholder shim for jQuery.
 */
 ;(function ($, window, document) {
 
-// Class applied to placeholder shim elements.
-var placeholderClass = 'placeholder-shim';
+// Custom element used for placeholder shims.
+var placeholderTag = 'x-placeholder-shim';
 
 // Store of all elements with a placeholder shim.
 var shimmedElements = [];
@@ -17,24 +17,38 @@ var UID = 0;
 var NS = 'placeholderShim';
 var eventNS = '.' + NS;
 
-function placeholderShim (element) {
+function placeholderShim(element) {
 
     var $element = $(element);
+    var elementId = $(element).attr('id');
     var $placeholder = $element.data(NS);
     var initialized = !! $placeholder;
 
     if (! initialized) {
 
+        // If refreshing after ajax action remove existing placeholder shim.
+        if (elementId) {
+            $('body [placeholder-shim-for="' + elementId + '"]').remove();
+        }
+
         // Create placeholder element with unique ID.
         var placeholderID = NS + ++UID;
-        $placeholder = $('<span aria-hidden="true"></span>')
-            .addClass(placeholderClass)
-            .attr('id', placeholderID);
+        $placeholder = $(document.createElement(placeholderTag))
+            .attr({
+                'id': placeholderID,
+                'aria-hidden': 'true'
+            });
+
+        // If an ID is set on $element store it on $placeholder so it can be targeted
+        // individually with CSS.
+        if (elementId) {
+            $placeholder.attr('placeholder-shim-for', elementId);
+        }
 
         // Store $placeholder on $element and link with ARIA.
         $element
             .data(NS, $placeholder)
-            .attr('aria-describedby', placeholderID)
+            .attr('aria-describedby', placeholderID);
 
         // Bind trigger events.
         $element
@@ -44,28 +58,45 @@ function placeholderShim (element) {
         $placeholder.on('click' + eventNS, focus);
     }
 
-    // State handlers.
-    function blur (e) {
+    function blur(e) {
         var currentValue = $.trim($element.val());
         if (currentValue.length) {
             $placeholder.hide();
         }
         else {
-            $placeholder.appendTo(document.body).show();
+            $placeholder.appendTo(document.body);
+            stylePlaceholder($element, $placeholder);
+            $placeholder.show();
         }
     }
-    function focus (e) {
+
+    function focus(e) {
         $placeholder.hide();
         if (e && (e.type !== 'focus') && (e.type !== 'focusin')) {
             $element.focus();
         }
     }
 
-    // If an ID is set on $element store it on $placeholder so it can be targeted
-    // individually with CSS.
-    if ($element.attr('id')) {
-        $placeholder.attr('for', $element.attr('id'));
-    }
+    blur();
+}
+
+function refreshPlaceholders() {
+
+    $.each(shimmedElements, function (index, element) {
+        var $element = $(element);
+        var visible = $element.is(':visible');
+        var $placeholder = $element.data(NS);
+
+        $placeholder && $placeholder.toggle(visible);
+
+        // Only update visible elements that are in the DOM.
+        if (visible && $placeholder && $placeholder[0].parentNode) {
+            placeholderShim(element);
+        }
+    });
+}
+
+function stylePlaceholder($element, $placeholder) {
 
     // Copy position and styles from $element to $placeholder so it sits directly above.
     var elementOffset = $element.offset();
@@ -76,18 +107,20 @@ function placeholderShim (element) {
             top: elementOffset.top,
             maxWidth: $element.width()
         });
+
     $.each([
         'box-sizing',
         'border-top-width',
-        'border-left-width',
         'border-right-width',
+        'border-left-width',
         'padding-top',
-        'padding-left',
         'padding-right',
+        'padding-left',
         'font-size',
         'font-family',
         'line-height',
-        'text-align'
+        'text-align',
+        'word-spacing'
         ], function (index, property) {
             var element = $element[0];
             // Workaround incorrect reported line-height in IE.
@@ -102,29 +135,9 @@ function placeholderShim (element) {
                 $placeholder.css(property, $element.css(property));
             }
         });
-
-    // Set initial state.
-    blur();
 }
 
-function placeholderShimRefresh (options) {
-
-    $.each(shimmedElements, function (index, element) {
-        var $element = $(element);
-        var visible = $element.is(':visible');
-        var $placeholder = $element.data(NS);
-
-        $placeholder && $placeholder.toggle(visible);
-
-        // Only update visible elements that are in the DOM.
-        if (visible && $placeholder && $placeholder[0].parentNode) {
-            placeholderShim(element, options);
-        }
-    });
-}
-
-
-$.fn.placeholderShim = function (options) {
+$.fn.placeholderShim = function () {
 
     if (placeholderSupported) {
         return this;
@@ -133,15 +146,16 @@ $.fn.placeholderShim = function (options) {
     if (! placeholderSharedStyles) {
         placeholderSharedStyles = $(
             '<style id="placeholder-shim-styles" type="text/css">' +
-            '.placeholder-shim {' +
-                'position: absolute !important;' +
-                'white-space: nowrap !important;' +
-                'overflow: hidden !important;' +
-                'background: 0 !important;' +
-                'border: 0 solid transparent;' +
+            placeholderTag + '{' + [
+                'position: absolute !important',
+                'white-space: nowrap !important',
+                'overflow: hidden !important',
+                'background: 0 !important',
+                'border-color: transparent',
+                'border-style: solid',
                 // Default placeholder color.
-                'color: #777;' +
-            '}' +
+                'color: #777'
+            ].join(';') + '}' +
             '</style>')[0];
 
         // Add shared styles before any other style definition so overriding is easy.
@@ -156,9 +170,9 @@ $.fn.placeholderShim = function (options) {
 
     // Bind refresh trigger events.
     $(window).off(eventNS).on([
-        'resize' + eventNS,
-        'load' + eventNS
-      ].join(' '), placeholderShimRefresh);
+            'resize' + eventNS,
+            'load' + eventNS
+        ].join(' '), refreshPlaceholders);
 
     return $elements.each(function () {
         placeholderShim(this);
